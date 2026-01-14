@@ -1232,6 +1232,30 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         }
     }
 
+    function navigateToResearchSection(targetId) {
+        const target = document.getElementById(targetId);
+        if (!target) return;
+
+        // Close all sections first
+        document.querySelectorAll('.research-section').forEach(section => {
+            section.removeAttribute('open');
+        });
+
+        // Open the target section
+        target.setAttribute('open', '');
+
+        // Scroll into view
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Update active button state
+        document.querySelectorAll('.research-nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.target === targetId) {
+                btn.classList.add('active');
+            }
+        });
+    }
+
     function toggleSettings() {
         elements.settingsPanel.classList.toggle('expanded');
     }
@@ -1369,6 +1393,14 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
                 if (e.target === researchBackdrop) hideResearchModal();
             });
         }
+
+        // Research Navigation Buttons
+        document.querySelectorAll('.research-nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.dataset.target;
+                if (targetId) navigateToResearchSection(targetId);
+            });
+        });
 
         // Touch/pointer
         canvas.addEventListener('pointerdown', handlePointerDown);

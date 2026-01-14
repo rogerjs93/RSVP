@@ -964,8 +964,48 @@ body {
 
 .research-intro {
     color: var(--text-secondary);
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
     line-height: 1.6;
+}
+
+/* Quick Navigation Tabs */
+.research-nav {
+    display: flex;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-sm);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--border-radius);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.research-nav-btn {
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.research-nav-btn:hover {
+    border-color: var(--accent);
+    background-color: var(--bg-hover);
+    transform: scale(1.05);
+}
+
+.research-nav-btn:active,
+.research-nav-btn.active {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: white;
 }
 
 .research-section {
@@ -973,6 +1013,19 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     overflow: hidden;
+}
+
+/* Hide default marker */
+.research-section summary {
+    list-style: none;
+}
+
+.research-section summary::-webkit-details-marker {
+    display: none;
+}
+
+.research-section summary::marker {
+    display: none;
 }
 
 .research-header {
@@ -984,23 +1037,78 @@ body {
     cursor: pointer;
     font-weight: 600;
     font-size: 1rem;
-    transition: background-color var(--transition-fast);
+    transition: all var(--transition-fast);
+    border-left: 3px solid transparent;
+    user-select: none;
 }
 
 .research-header:hover {
     background-color: var(--bg-hover);
+    border-left-color: var(--accent);
+}
+
+/* Chevron indicator */
+.research-header::after {
+    content: '';
+    margin-left: auto;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid var(--text-secondary);
+    border-bottom: 2px solid var(--text-secondary);
+    transform: rotate(-45deg);
+    transition: transform var(--transition-fast);
+    flex-shrink: 0;
+}
+
+/* Rotate chevron when open */
+.research-section[open] > .research-header::after {
+    transform: rotate(45deg);
+}
+
+/* Active/open state styling */
+.research-section[open] > .research-header {
+    background-color: var(--bg-hover);
+    border-left-color: var(--accent);
 }
 
 .research-icon {
     font-size: 1.25rem;
-    width: 28px;
-    text-align: center;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    flex-shrink: 0;
+}
+
+.research-section[open] > .research-header .research-icon {
+    background-color: var(--accent);
+    color: white;
+}
+
+.research-header-text {
+    flex: 1;
 }
 
 .research-content {
     padding: var(--spacing-md);
     background-color: var(--bg-secondary);
     line-height: 1.7;
+    border-top: 1px solid var(--border-color);
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .research-content h4 {

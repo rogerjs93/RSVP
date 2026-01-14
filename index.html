@@ -299,10 +299,20 @@
             </div>
             
             <div class="modal-body research-body">
-                <p class="research-intro">Each highlight mode in FastReader is grounded in peer-reviewed reading science research. Click any section to explore the academic foundations.</p>
+                <p class="research-intro">Each highlight mode in FastReader is grounded in peer-reviewed reading science research. Click any mode below to explore the academic foundations.</p>
+                
+                <!-- Quick Navigation Tabs -->
+                <div class="research-nav">
+                    <button class="research-nav-btn" data-target="research-classic" title="Classic ORP">◉</button>
+                    <button class="research-nav-btn" data-target="research-startend" title="Start-End Anchoring">⟨⟩</button>
+                    <button class="research-nav-btn" data-target="research-adaptive" title="Adaptive Focus">↔</button>
+                    <button class="research-nav-btn" data-target="research-syllable" title="Syllable Rhythm">∿</button>
+                    <button class="research-nav-btn" data-target="research-morpheme" title="Morpheme Structure">⧈</button>
+                    <button class="research-nav-btn" data-target="research-minimal" title="Minimal">○</button>
+                </div>
                 
                 <!-- Classic ORP -->
-                <details class="research-section" open>
+                <details id="research-classic" class="research-section" open>
                     <summary class="research-header">
                         <span class="research-icon">◉</span>
                         <span>Classic (Optimal Recognition Point)</span>
@@ -329,7 +339,7 @@
                 </details>
 
                 <!-- Start-End Anchoring -->
-                <details class="research-section">
+                <details id="research-startend" class="research-section">
                     <summary class="research-header">
                         <span class="research-icon">⟨⟩</span>
                         <span>Start-End Anchoring</span>
@@ -359,7 +369,7 @@
                 </details>
 
                 <!-- Adaptive Focus -->
-                <details class="research-section">
+                <details id="research-adaptive" class="research-section">
                     <summary class="research-header">
                         <span class="research-icon">↔</span>
                         <span>Adaptive Focus</span>
@@ -386,7 +396,7 @@
                 </details>
 
                 <!-- Syllable Rhythm -->
-                <details class="research-section">
+                <details id="research-syllable" class="research-section">
                     <summary class="research-header">
                         <span class="research-icon">∿</span>
                         <span>Syllable Rhythm</span>
@@ -416,7 +426,7 @@
                 </details>
 
                 <!-- Morpheme Structure -->
-                <details class="research-section">
+                <details id="research-morpheme" class="research-section">
                     <summary class="research-header">
                         <span class="research-icon">⧈</span>
                         <span>Morpheme Structure</span>
@@ -446,7 +456,7 @@
                 </details>
 
                 <!-- Minimal -->
-                <details class="research-section">
+                <details id="research-minimal" class="research-section">
                     <summary class="research-header">
                         <span class="research-icon">○</span>
                         <span>Minimal</span>

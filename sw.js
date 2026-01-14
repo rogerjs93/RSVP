@@ -5,8 +5,8 @@
  * 100% Open Source - MIT License
  */
 
-const CACHE_NAME = 'fastreader-v5';
-const CACHE_VERSION = 5;
+const CACHE_NAME = 'fastreader-v6';
+const CACHE_VERSION = 6;
 
 // Assets to cache on install
 const PRECACHE_ASSETS = [

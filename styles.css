@@ -961,6 +961,12 @@ body {
     overflow-y: auto;
     max-height: calc(90vh - 80px);
     padding: 0 !important;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.research-body::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
 }
 
 /* Tab Navigation */

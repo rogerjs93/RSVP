@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="FastReader - A free, open-source RSVP speed reading app. Read faster with Rapid Serial Visual Presentation.">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FastReader">
+    
+    <title>FastReader - RSVP Speed Reading</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <!-- Fonts -->
+    <link rel="preload" href="fonts/OpenDyslexic-Regular.otf" as="font" type="font/otf" crossorigin>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="dark">
+    <!-- Offline Banner -->
+    <div id="offlineBanner" class="offline-banner hidden">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0119 12.55M5 12.55a10.94 10.94 0 015.17-2.39M10.71 5.05A16 16 0 0122.58 9M1.42 9a15.91 15.91 0 014.7-2.88M8.53 16.11a6 6 0 016.95 0M12 20h.01"/>
+        </svg>
+        <span>You're offline — reading from cache</span>
+    </div>
+
+    <!-- Main Canvas -->
+    <canvas id="stage"></canvas>
+
+    <!-- Progress Display -->
+    <div id="progressDisplay" class="progress-display">
+        <span id="progressText">Word 0 of 0</span>
+        <div id="progressBar" class="progress-bar">
+            <div id="progressFill" class="progress-fill"></div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls" class="controls">
+        <!-- Primary Controls -->
+        <div class="controls-row primary-controls">
+            <button id="resetBtn" class="btn btn-icon" title="Reset (R)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                </svg>
+            </button>
+            
+            <button id="backBtn" class="btn btn-icon" title="Back (←)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            
+            <button id="playBtn" class="btn btn-primary" title="Play/Pause (Space)">
+                <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+                <svg id="pauseIcon" class="hidden" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 4h4v16H6zM14 4h4v16h-4z"/>
+                </svg>
+            </button>
+            
+            <button id="fwdBtn" class="btn btn-icon" title="Forward (→)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </button>
+            
+            <button id="textBtn" class="btn btn-icon" title="Set Text">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Settings Toggle (Mobile) -->
+        <button id="settingsToggle" class="btn btn-icon settings-toggle" title="Settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+        </button>
+
+        <!-- Secondary Controls (Collapsible on mobile) -->
+        <div id="settingsPanel" class="controls-row secondary-controls">
+            <!-- WPM Control -->
+            <div class="control-group wpm-control">
+                <label id="wpmLabel" class="wpm-label" title="Click to edit">
+                    WPM: <span id="wpmValue">300</span>
+                </label>
+                <input type="number" id="wpmInput" class="wpm-input hidden" min="50" max="1500" value="300">
+                <input type="range" id="wpmRange" class="wpm-range" min="50" max="1500" value="300">
+            </div>
+
+            <!-- Profile Selector -->
+            <div class="control-group">
+                <select id="profileSelect" class="select" title="Pause Profile">
+                    <option value="relaxed">Relaxed</option>
+                    <option value="normal" selected>Normal</option>
+                    <option value="speed">Speed</option>
+                </select>
+            </div>
+
+            <!-- Font Selector -->
+            <div class="control-group">
+                <select id="fontSelect" class="select" title="Font">
+                    <option value="system">System Default</option>
+                    <option value="Arial">Arial</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Trebuchet MS">Trebuchet MS</option>
+                    <option value="Tahoma">Tahoma</option>
+                    <option value="Courier New">Courier New</option>
+                    <option value="OpenDyslexic">OpenDyslexic</option>
+                </select>
+            </div>
+
+            <!-- Toggle Buttons -->
+            <button id="loopToggleBtn" class="btn btn-toggle" title="Loop">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 1l4 4-4 4"/>
+                    <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                    <path d="M7 23l-4-4 4-4"/>
+                    <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                </svg>
+                <span class="toggle-label">Loop</span>
+            </button>
+
+            <button id="themeBtn" class="btn btn-toggle" title="Toggle Theme (T)">
+                <svg id="sunIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+                <svg id="moonIcon" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Text Input Modal -->
+    <div id="modalBackdrop" class="modal-backdrop hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Set Reading Text</h2>
+                <button id="closeModalBtn" class="btn btn-icon modal-close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <textarea id="textArea" class="text-area" placeholder="Paste your text here..."></textarea>
+                
+                <div class="file-upload">
+                    <label for="fileInput" class="file-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <span>Upload file (.txt, .pdf)</span>
+                    </label>
+                    <input type="file" id="fileInput" accept=".txt,.pdf,text/plain,application/pdf" class="file-input">
+                </div>
+
+                <!-- Recent PDFs -->
+                <div id="recentPdfs" class="recent-pdfs hidden">
+                    <h3>Recent Documents</h3>
+                    <ul id="recentList" class="recent-list"></ul>
+                </div>
+
+                <!-- PDF Loading Status -->
+                <div id="pdfStatus" class="pdf-status hidden">
+                    <div class="pdf-status-icon">
+                        <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                        </svg>
+                    </div>
+                    <span id="pdfStatusText">Loading PDF...</span>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="cancelModalBtn" class="btn btn-secondary">Cancel</button>
+                <button id="applyModalBtn" class="btn btn-primary">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Loading Options Modal -->
+    <div id="pdfOptionsBackdrop" class="modal-backdrop hidden">
+        <div class="modal modal-small">
+            <div class="modal-header">
+                <h2>PDF Loading Options</h2>
+                <button id="closePdfOptionsBtn" class="btn btn-icon modal-close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <p id="pdfInfoText" class="pdf-info-text">This PDF has X pages (~Y words)</p>
+                
+                <div class="pdf-options">
+                    <button id="loadAllPagesBtn" class="btn btn-option">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <path d="M14 2v6h6"/>
+                            <path d="M12 18v-6M9 15l3 3 3-3"/>
+                        </svg>
+                        <div class="option-text">
+                            <strong>Load All Pages</strong>
+                            <span>Wait for complete document before reading</span>
+                        </div>
+                    </button>
+                    
+                    <button id="loadQuickStartBtn" class="btn btn-option">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                        <div class="option-text">
+                            <strong>Quick Start</strong>
+                            <span>Load first 3 pages, continue loading in background</span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Loading Progress -->
+                <div id="pdfLoadingProgress" class="pdf-loading-progress hidden">
+                    <div class="pdf-status-icon">
+                        <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                        </svg>
+                    </div>
+                    <span id="pdfLoadingText">Loading pages...</span>
+                    <div class="progress-bar">
+                        <div id="pdfProgressFill" class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay (for PDF page loading during reading) -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <svg class="spinner large" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+            <span>Loading next page...</span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="lib/pdf.min.js"></script>
+    <script src="db.js"></script>
+    <script src="pdf-loader.js"></script>
+    <script src="app.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW registered:', reg.scope))
+                    .catch(err => console.warn('SW registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

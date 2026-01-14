@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#0f0f1a"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="512" height="512" rx="64" fill="url(#bg)"/>
+  <!-- Book/page shape -->
+  <path d="M128 112 L256 92 L384 112 L384 400 L256 420 L128 400 Z" fill="#252542" stroke="#303050" stroke-width="4"/>
+  <!-- Center spine -->
+  <line x1="256" y1="92" x2="256" y2="420" stroke="#303050" stroke-width="4"/>
+  <!-- Text lines on left page -->
+  <line x1="152" y1="168" x2="232" y2="156" stroke="#606070" stroke-width="10" stroke-linecap="round"/>
+  <line x1="152" y1="216" x2="232" y2="204" stroke="#606070" stroke-width="10" stroke-linecap="round"/>
+  <line x1="152" y1="264" x2="232" y2="252" stroke="#606070" stroke-width="10" stroke-linecap="round"/>
+  <line x1="152" y1="312" x2="200" y2="304" stroke="#606070" stroke-width="10" stroke-linecap="round"/>
+  <!-- Text lines on right page -->
+  <line x1="280" y1="156" x2="360" y2="168" stroke="#606070" stroke-width="10" stroke-linecap="round"/>
+  <line x1="280" y1="204" x2="360" y2="216" stroke="#606070" stroke-width="10" stroke-linecap="round"/>
+  <line x1="280" y1="252" x2="360" y2="264" stroke="#606070" stroke-width="10" stroke-linecap="round"/>
+  <!-- Focal point highlight -->
+  <circle cx="256" cy="256" r="40" fill="none" stroke="#e94560" stroke-width="6"/>
+  <circle cx="256" cy="256" r="16" fill="#e94560"/>
+  <!-- Speed lines -->
+  <path d="M56 256 L100 256" stroke="#e94560" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+  <path d="M412 256 L456 256" stroke="#e94560" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+  <path d="M68 220 L104 232" stroke="#e94560" stroke-width="4" stroke-linecap="round" opacity="0.4"/>
+  <path d="M68 292 L104 280" stroke="#e94560" stroke-width="4" stroke-linecap="round" opacity="0.4"/>
+  <path d="M408 232 L444 220" stroke="#e94560" stroke-width="4" stroke-linecap="round" opacity="0.4"/>
+  <path d="M408 280 L444 292" stroke="#e94560" stroke-width="4" stroke-linecap="round" opacity="0.4"/>
+</svg>

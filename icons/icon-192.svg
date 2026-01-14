@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#0f0f1a"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="192" height="192" rx="24" fill="url(#bg)"/>
+  <!-- Book/page shape -->
+  <path d="M48 44 L96 36 L144 44 L144 148 L96 156 L48 148 Z" fill="#252542" stroke="#303050" stroke-width="2"/>
+  <!-- Center spine -->
+  <line x1="96" y1="36" x2="96" y2="156" stroke="#303050" stroke-width="2"/>
+  <!-- Text lines on left page -->
+  <line x1="58" y1="64" x2="88" y2="60" stroke="#606070" stroke-width="4" stroke-linecap="round"/>
+  <line x1="58" y1="84" x2="88" y2="80" stroke="#606070" stroke-width="4" stroke-linecap="round"/>
+  <line x1="58" y1="104" x2="88" y2="100" stroke="#606070" stroke-width="4" stroke-linecap="round"/>
+  <line x1="58" y1="124" x2="76" y2="122" stroke="#606070" stroke-width="4" stroke-linecap="round"/>
+  <!-- Text lines on right page -->
+  <line x1="104" y1="60" x2="134" y2="64" stroke="#606070" stroke-width="4" stroke-linecap="round"/>
+  <line x1="104" y1="80" x2="134" y2="84" stroke="#606070" stroke-width="4" stroke-linecap="round"/>
+  <line x1="104" y1="100" x2="134" y2="104" stroke="#606070" stroke-width="4" stroke-linecap="round"/>
+  <!-- Focal point highlight -->
+  <circle cx="96" cy="96" r="16" fill="none" stroke="#e94560" stroke-width="3"/>
+  <circle cx="96" cy="96" r="6" fill="#e94560"/>
+  <!-- Speed lines -->
+  <path d="M24 96 L40 96" stroke="#e94560" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+  <path d="M152 96 L168 96" stroke="#e94560" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+</svg>

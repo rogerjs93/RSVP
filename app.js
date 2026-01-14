@@ -1222,6 +1222,13 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         const backdrop = document.getElementById('researchBackdrop');
         if (backdrop) {
             backdrop.classList.remove('hidden');
+            // Activate first tab by default if none active
+            const tabs = backdrop.querySelectorAll('.research-tab');
+            const panels = backdrop.querySelectorAll('.research-panel');
+            if (tabs.length && !backdrop.querySelector('.research-tab.active')) {
+                tabs[0].classList.add('active');
+                panels[0]?.classList.add('active');
+            }
         }
     }
 
@@ -1232,28 +1239,43 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         }
     }
 
+    function switchResearchTab(tabId) {
+        const backdrop = document.getElementById('researchBackdrop');
+        if (!backdrop) return;
+
+        // Remove active from all tabs and panels
+        backdrop.querySelectorAll('.research-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        backdrop.querySelectorAll('.research-panel').forEach(panel => {
+            panel.classList.remove('active');
+        });
+
+        // Activate clicked tab
+        const clickedTab = backdrop.querySelector(`.research-tab[data-tab="${tabId}"]`);
+        if (clickedTab) {
+            clickedTab.classList.add('active');
+        }
+
+        // Activate corresponding panel
+        const panel = backdrop.querySelector(`#panel-${tabId}`);
+        if (panel) {
+            panel.classList.add('active');
+        }
+    }
+
     function navigateToResearchSection(targetId) {
-        const target = document.getElementById(targetId);
-        if (!target) return;
-
-        // Close all sections first
-        document.querySelectorAll('.research-section').forEach(section => {
-            section.removeAttribute('open');
-        });
-
-        // Open the target section
-        target.setAttribute('open', '');
-
-        // Scroll into view
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-        // Update active button state
-        document.querySelectorAll('.research-nav-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.target === targetId) {
-                btn.classList.add('active');
-            }
-        });
+        // Map old IDs to new tab IDs
+        const idMap = {
+            'research-classic': 'classic',
+            'research-startend': 'startend',
+            'research-adaptive': 'adaptive',
+            'research-syllable': 'syllable',
+            'research-morpheme': 'morpheme',
+            'research-minimal': 'minimal'
+        };
+        const tabId = idMap[targetId] || targetId;
+        switchResearchTab(tabId);
     }
 
     function toggleSettings() {
@@ -1394,11 +1416,19 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
             });
         }
 
-        // Research Navigation Buttons
+        // Research Navigation Buttons (old style - for compatibility)
         document.querySelectorAll('.research-nav-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const targetId = btn.dataset.target;
                 if (targetId) navigateToResearchSection(targetId);
+            });
+        });
+
+        // Research Tab Buttons (new tabbed interface)
+        document.querySelectorAll('.research-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                if (tabId) switchResearchTab(tabId);
             });
         });
 

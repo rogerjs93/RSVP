@@ -20,7 +20,9 @@
         font: 'fastreader.font',
         lastText: 'fastreader.lastText',
         highlightMode: 'fastreader.highlightMode',
-        firstVisit: 'fastreader.firstVisit'
+        firstVisit: 'fastreader.firstVisit',
+        soundEnabled: 'fastreader.soundEnabled',
+        soundModes: 'fastreader.soundModes'
     };
 
     // Highlight Modes for different reading strategies
@@ -171,6 +173,17 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
     let fontChoice = loadStr(STORAGE_KEYS.font, 'system');
     let highlightMode = loadStr(STORAGE_KEYS.highlightMode, 'classic');
     let isFirstVisit = !localStorage.getItem(STORAGE_KEYS.firstVisit);
+
+    // Sound settings
+    let soundEnabled = loadBool(STORAGE_KEYS.soundEnabled, false);
+    let soundModes = loadJson(STORAGE_KEYS.soundModes, {
+        classic: false,      // Pauses only by default
+        startEnd: true,      // Phrase ticks
+        adaptive: true,      // Dynamic pauses + sparse ticks
+        syllable: true,      // Stressed-syllable ticks
+        morpheme: true,      // Boundary confirmation ticks
+        minimal: false       // Silence
+    });
 
     // PDF state
     let isPdfMode = false;
@@ -463,6 +476,164 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         }
     }
 
+    function loadJson(key, fallback) {
+        try {
+            const val = localStorage.getItem(key);
+            return val ? JSON.parse(val) : fallback;
+        } catch (e) {
+            return fallback;
+        }
+    }
+
+    function saveJson(key, value) {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+            console.warn('Failed to save to localStorage:', e);
+        }
+    }
+
+    // ============================================
+    // Prosodic Sound Engine (Web Audio API)
+    // ============================================
+
+    const ProsodicSound = {
+        audioCtx: null,
+        isInitialized: false,
+        
+        // Sound configurations per mode (based on neurolinguistic research)
+        // Duration: 10-40ms, Attack: <5ms, Decay: <30ms
+        configs: {
+            classic: {
+                // Pauses only - no ticks (silence restores syntactic rhythm)
+                enabled: false
+            },
+            startEnd: {
+                // Phrase-aligned soft ticks for chunking
+                enabled: true,
+                phraseTick: { freq: 800, duration: 0.020, volume: 0.08 },
+                clauseTick: { freq: 700, duration: 0.025, volume: 0.10 },
+                sentenceEnd: { silence: true }
+            },
+            adaptive: {
+                // Dynamic pauses + sparse boundary ticks
+                enabled: true,
+                phraseTick: { freq: 900, duration: 0.015, volume: 0.06 },
+                clauseTick: { freq: 750, duration: 0.020, volume: 0.08 },
+                sentenceEnd: { silence: true }
+            },
+            syllable: {
+                // Stressed-syllable micro-ticks (theta-band ~4-8 Hz alignment)
+                enabled: true,
+                stressTick: { freq: 1000, duration: 0.012, volume: 0.05 },
+                phraseBoundary: { silence: true }
+            },
+            morpheme: {
+                // Boundary confirmation ticks (prefix→root, root→suffix)
+                enabled: true,
+                prefixTick: { freq: 850, duration: 0.015, volume: 0.06 },
+                suffixTick: { freq: 750, duration: 0.020, volume: 0.07 }
+            },
+            minimal: {
+                // Complete silence - expert readers self-generate prosody
+                enabled: false
+            }
+        },
+
+        init() {
+            if (this.isInitialized) return true;
+            try {
+                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                this.isInitialized = true;
+                return true;
+            } catch (e) {
+                console.warn('Web Audio API not supported:', e);
+                return false;
+            }
+        },
+
+        resume() {
+            if (this.audioCtx && this.audioCtx.state === 'suspended') {
+                this.audioCtx.resume();
+            }
+        },
+
+        /**
+         * Play a short transient tick sound
+         * @param {number} freq - Frequency in Hz (fixed pitch, no melody)
+         * @param {number} duration - Duration in seconds (10-40ms range)
+         * @param {number} volume - Volume 0-1 (aim for -20 to -30 LUFS)
+         */
+        playTick(freq = 800, duration = 0.020, volume = 0.08) {
+            if (!this.audioCtx || !soundEnabled) return;
+            
+            // Check if current mode has sound enabled
+            if (!soundModes[highlightMode]) return;
+            
+            try {
+                const ctx = this.audioCtx;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                // Use sine wave for soft woodblock-like timbre
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                
+                // Fast attack (<5ms), quick decay (<30ms)
+                const now = ctx.currentTime;
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(volume, now + 0.003); // 3ms attack
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + duration);
+            } catch (e) {
+                // Silently fail - sound is optional
+            }
+        },
+
+        /**
+         * Play mode-specific cue based on current word/context
+         * @param {string} cueType - 'phrase', 'clause', 'sentence', 'stress', 'prefix', 'suffix'
+         */
+        playCue(cueType) {
+            if (!soundEnabled || !soundModes[highlightMode]) return;
+            
+            const config = this.configs[highlightMode];
+            if (!config || !config.enabled) return;
+
+            switch (cueType) {
+                case 'phrase':
+                    if (config.phraseTick) {
+                        this.playTick(config.phraseTick.freq, config.phraseTick.duration, config.phraseTick.volume);
+                    }
+                    break;
+                case 'clause':
+                    if (config.clauseTick) {
+                        this.playTick(config.clauseTick.freq, config.clauseTick.duration, config.clauseTick.volume);
+                    }
+                    break;
+                case 'stress':
+                    if (config.stressTick) {
+                        this.playTick(config.stressTick.freq, config.stressTick.duration, config.stressTick.volume);
+                    }
+                    break;
+                case 'prefix':
+                    if (config.prefixTick) {
+                        this.playTick(config.prefixTick.freq, config.prefixTick.duration, config.prefixTick.volume);
+                    }
+                    break;
+                case 'suffix':
+                    if (config.suffixTick) {
+                        this.playTick(config.suffixTick.freq, config.suffixTick.duration, config.suffixTick.volume);
+                    }
+                    break;
+            }
+        }
+    };
+
     // ============================================
     // Tokenizer
     // ============================================
@@ -577,7 +748,51 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
             dwell = Math.max(dwell, profile.minCommaMs);
         }
 
+        // Trigger prosodic sound cues based on punctuation and mode
+        if (soundEnabled && soundModes[highlightMode]) {
+            triggerProsodicCue(token, word);
+        }
+
         return dwell;
+    }
+
+    /**
+     * Trigger appropriate prosodic sound cue based on context
+     */
+    function triggerProsodicCue(token, word) {
+        // Sentence ending - most modes use silence, but trigger for those that have cues
+        if (/[.!?]$/.test(word)) {
+            // Sentence boundaries typically use silence in all modes
+            return;
+        }
+        
+        // Clause boundary (comma, semicolon, colon)
+        if (/[,;:]$/.test(word)) {
+            ProsodicSound.playCue('clause');
+            return;
+        }
+        
+        // Paragraph end
+        if (token.isParagraphEnd) {
+            ProsodicSound.playCue('phrase');
+            return;
+        }
+
+        // Mode-specific triggers
+        if (highlightMode === 'syllable') {
+            // For syllable mode, play stress tick on first syllable of multi-syllable words
+            const cleanWord = word.replace(/[^\p{L}]/gu, '');
+            if (cleanWord.length > 4) {
+                ProsodicSound.playCue('stress');
+            }
+        } else if (highlightMode === 'morpheme') {
+            // For morpheme mode, tick on words with detected affixes
+            const morph = detectMorphemes(word);
+            if (morph.prefix.end > 0 || morph.suffix.start < word.length) {
+                if (morph.prefix.end > 0) ProsodicSound.playCue('prefix');
+                if (morph.suffix.start < word.length) ProsodicSound.playCue('suffix');
+            }
+        }
     }
 
     function stopLoop() {
@@ -1156,6 +1371,46 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         updateLoopUI();
     }
 
+    function toggleSound() {
+        soundEnabled = !soundEnabled;
+        saveStr(STORAGE_KEYS.soundEnabled, String(soundEnabled));
+        updateSoundUI();
+        
+        // Initialize audio context on first enable (requires user gesture)
+        if (soundEnabled) {
+            ProsodicSound.init();
+            ProsodicSound.resume();
+        }
+    }
+
+    function toggleSoundMode(mode) {
+        if (soundModes.hasOwnProperty(mode)) {
+            soundModes[mode] = !soundModes[mode];
+            saveJson(STORAGE_KEYS.soundModes, soundModes);
+            updateSoundModeUI();
+        }
+    }
+
+    function updateSoundUI() {
+        const btn = document.getElementById('soundToggleBtn');
+        if (btn) {
+            btn.classList.toggle('active', soundEnabled);
+        }
+        const panel = document.getElementById('soundSettingsPanel');
+        if (panel) {
+            panel.classList.toggle('hidden', !soundEnabled);
+        }
+    }
+
+    function updateSoundModeUI() {
+        Object.keys(soundModes).forEach(mode => {
+            const checkbox = document.getElementById(`sound-${mode}`);
+            if (checkbox) {
+                checkbox.checked = soundModes[mode];
+            }
+        });
+    }
+
     function setProfile(key) {
         if (PAUSE_PROFILES[key]) {
             profileKey = key;
@@ -1330,6 +1585,20 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         elements.loopToggleBtn.addEventListener('click', toggleLoop);
         elements.settingsToggle.addEventListener('click', toggleSettings);
 
+        // Sound toggle
+        const soundToggleBtn = document.getElementById('soundToggleBtn');
+        if (soundToggleBtn) {
+            soundToggleBtn.addEventListener('click', toggleSound);
+        }
+
+        // Sound mode checkboxes
+        document.querySelectorAll('.sound-mode-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const mode = e.target.dataset.mode;
+                if (mode) toggleSoundMode(mode);
+            });
+        });
+
         // WPM
         elements.wpmRange.addEventListener('input', (e) => applyWpm(+e.target.value));
         elements.wpmLabel.addEventListener('click', startEditingWpm);
@@ -1455,6 +1724,8 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         // Set initial UI state
         updateThemeUI();
         updateLoopUI();
+        updateSoundUI();
+        updateSoundModeUI();
         updateOnlineStatus();
         updateHighlightModeUI();
 

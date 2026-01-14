@@ -167,6 +167,54 @@
                 </svg>
                 <span class="toggle-label">Research</span>
             </button>
+
+            <button id="soundToggleBtn" class="btn btn-toggle" title="Toggle Prosodic Sound">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                </svg>
+                <span class="toggle-label">Sound</span>
+            </button>
+        </div>
+
+        <!-- Sound Settings Panel (shown when sound enabled) -->
+        <div id="soundSettingsPanel" class="sound-settings-panel hidden">
+            <div class="sound-settings-header">
+                <span>🔊 Prosodic Sound per Mode</span>
+            </div>
+            <div class="sound-mode-toggles">
+                <label class="sound-mode-toggle">
+                    <input type="checkbox" id="sound-classic" class="sound-mode-checkbox" data-mode="classic">
+                    <span class="sound-mode-label">◉ Classic</span>
+                    <span class="sound-mode-desc">Pauses only</span>
+                </label>
+                <label class="sound-mode-toggle">
+                    <input type="checkbox" id="sound-startEnd" class="sound-mode-checkbox" data-mode="startEnd">
+                    <span class="sound-mode-label">⟨⟩ Start-End</span>
+                    <span class="sound-mode-desc">Phrase ticks</span>
+                </label>
+                <label class="sound-mode-toggle">
+                    <input type="checkbox" id="sound-adaptive" class="sound-mode-checkbox" data-mode="adaptive">
+                    <span class="sound-mode-label">↔ Adaptive</span>
+                    <span class="sound-mode-desc">Dynamic cues</span>
+                </label>
+                <label class="sound-mode-toggle">
+                    <input type="checkbox" id="sound-syllable" class="sound-mode-checkbox" data-mode="syllable">
+                    <span class="sound-mode-label">∿ Syllable</span>
+                    <span class="sound-mode-desc">Stress ticks</span>
+                </label>
+                <label class="sound-mode-toggle">
+                    <input type="checkbox" id="sound-morpheme" class="sound-mode-checkbox" data-mode="morpheme">
+                    <span class="sound-mode-label">⧈ Morpheme</span>
+                    <span class="sound-mode-desc">Boundary cues</span>
+                </label>
+                <label class="sound-mode-toggle">
+                    <input type="checkbox" id="sound-minimal" class="sound-mode-checkbox" data-mode="minimal">
+                    <span class="sound-mode-label">○ Minimal</span>
+                    <span class="sound-mode-desc">Silence</span>
+                </label>
+            </div>
         </div>
     </div>
 
@@ -324,6 +372,10 @@
                     <button class="research-tab" data-tab="minimal">
                         <span class="tab-icon">○</span>
                         <span class="tab-label">Minimal</span>
+                    </button>
+                    <button class="research-tab" data-tab="sound">
+                        <span class="tab-icon">🔊</span>
+                        <span class="tab-label">Sound</span>
                     </button>
                 </div>
 
@@ -565,6 +617,99 @@
                                     <span>Comprehension supported by regressions during reading</span>
                                 </a>
                                 <p class="paper-finding">📌 Finding: Skilled readers need less visual guidance</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sound Science Panel -->
+                    <div id="panel-sound" class="research-panel">
+                        <div class="panel-header">
+                            <h3>🔊 Prosodic Sound Science</h3>
+                            <div class="panel-meta">
+                                <span class="meta-tag best-for">🎵 Optional audio cues for rhythm</span>
+                                <span class="meta-tag speed">🧠 Neurolinguistic</span>
+                            </div>
+                        </div>
+                        <div class="panel-description">
+                            <p>FastReader's prosodic sound system provides subtle audio cues aligned with linguistic boundaries. Based on neural oscillation theory and prosodic parsing research.</p>
+                            
+                            <h4>🎯 Global Sound Constraints</h4>
+                            <ul class="sound-constraints">
+                                <li><strong>Duration:</strong> 10–40 ms (never longer)</li>
+                                <li><strong>Attack:</strong> &lt;5 ms (no slow fade-ins)</li>
+                                <li><strong>Decay:</strong> &lt;30 ms</li>
+                                <li><strong>Pitch:</strong> Fixed (no melody)</li>
+                                <li><strong>Timbre:</strong> Soft click / muted tick</li>
+                                <li><strong>Volume:</strong> −20 to −30 LUFS (subtle)</li>
+                            </ul>
+                            <p class="sound-why"><em>Short transients entrain timing without activating music/emotion circuits. Longer sounds trigger attentional competition.</em></p>
+
+                            <h4>📊 Sound Strategy per Mode</h4>
+                            <div class="sound-modes-table">
+                                <div class="sound-mode-row">
+                                    <span class="mode-name">◉ Classic (ORP)</span>
+                                    <span class="mode-sound">Pauses only — no ticks. Silence restores syntactic rhythm in RSVP.</span>
+                                </div>
+                                <div class="sound-mode-row">
+                                    <span class="mode-name">⟨⟩ Start–End</span>
+                                    <span class="mode-sound">Phrase-aligned soft ticks (20ms) reinforce chunk boundaries for working memory.</span>
+                                </div>
+                                <div class="sound-mode-row">
+                                    <span class="mode-name">↔ Adaptive Focus</span>
+                                    <span class="mode-sound">Dynamic pauses + sparse boundary ticks mimic natural reading prosody.</span>
+                                </div>
+                                <div class="sound-mode-row">
+                                    <span class="mode-name">∿ Syllable Rhythm</span>
+                                    <span class="mode-sound">Stressed-syllable micro-ticks (10-15ms) align with theta-band (~4-8 Hz) for phonological parsing.</span>
+                                </div>
+                                <div class="sound-mode-row">
+                                    <span class="mode-name">⧈ Morpheme</span>
+                                    <span class="mode-sound">Boundary confirmation ticks at prefix→root and root→suffix transitions.</span>
+                                </div>
+                                <div class="sound-mode-row">
+                                    <span class="mode-name">○ Minimal</span>
+                                    <span class="mode-sound">Complete silence. Expert readers self-generate internal prosody.</span>
+                                </div>
+                            </div>
+
+                            <h4>⚠️ Safety Rules</h4>
+                            <ul class="sound-safety">
+                                <li>❌ No melody or continuous background</li>
+                                <li>❌ No enforced tempo or sync to every word</li>
+                                <li>✅ Encode structure, not speed</li>
+                                <li>✅ Prefer silence over sound</li>
+                                <li>✅ Fully optional per mode</li>
+                            </ul>
+                        </div>
+                        <div class="panel-papers">
+                            <h4>📄 Research Papers</h4>
+                            <div class="paper-card">
+                                <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3158676/" target="_blank" rel="noopener">
+                                    <strong>Poeppel, D. (2003)</strong>
+                                    <span>The analysis of speech in different temporal integration windows</span>
+                                </a>
+                                <p class="paper-finding">📌 Finding: Theta oscillations (~4-8 Hz) parse syllabic structure</p>
+                            </div>
+                            <div class="paper-card">
+                                <a href="https://mitpress.mit.edu/9780262162487/music-language-and-the-brain/" target="_blank" rel="noopener">
+                                    <strong>Patel, A.D. (2008)</strong>
+                                    <span>Music, Language, and the Brain</span>
+                                </a>
+                                <p class="paper-finding">📌 Finding: Prosodic cues improve parsing without activating music circuits</p>
+                            </div>
+                            <div class="paper-card">
+                                <a href="https://www.sciencedirect.com/science/article/pii/S0010027710001745" target="_blank" rel="noopener">
+                                    <strong>Goswami, U. (2011)</strong>
+                                    <span>A temporal sampling framework for developmental dyslexia</span>
+                                </a>
+                                <p class="paper-finding">📌 Finding: Syllabic rhythm cues aid phonological processing</p>
+                            </div>
+                            <div class="paper-card">
+                                <a href="https://psycnet.apa.org/record/2006-10322-001" target="_blank" rel="noopener">
+                                    <strong>Baddeley, A. (2003)</strong>
+                                    <span>Working memory and language</span>
+                                </a>
+                                <p class="paper-finding">📌 Finding: Chunking at phrase boundaries improves retention</p>
                             </div>
                         </div>
                     </div>

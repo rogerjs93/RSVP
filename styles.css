@@ -685,6 +685,106 @@ body {
 }
 
 /* ============================================
+   Welcome Screen
+   ============================================ */
+
+.modal-welcome {
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.welcome-intro {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+    font-size: 1rem;
+}
+
+.welcome-modes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.welcome-mode-card {
+    display: flex;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border);
+    border-radius: var(--border-radius-lg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.welcome-mode-card:hover {
+    border-color: var(--accent);
+    background: var(--bg-secondary);
+    transform: translateY(-2px);
+}
+
+.mode-icon {
+    font-size: 2rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    flex-shrink: 0;
+    color: var(--accent);
+}
+
+.mode-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.mode-info h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.mode-desc {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.mode-best {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.mode-pros-cons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    font-size: 0.6875rem;
+}
+
+.mode-pros-cons .pro {
+    color: #51cf66;
+}
+
+.mode-pros-cons .con {
+    color: #ff6b6b;
+}
+
+.welcome-footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* ============================================
    Responsive Design
    ============================================ */
 
@@ -739,6 +839,30 @@ body {
 
     .text-area {
         min-height: 150px;
+    }
+
+    /* Welcome screen mobile adjustments */
+    .modal-welcome {
+        max-height: 95vh;
+    }
+
+    .welcome-modes-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+
+    .welcome-mode-card {
+        padding: var(--spacing-sm);
+    }
+
+    .mode-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+    }
+
+    .mode-pros-cons {
+        display: none;
     }
 }
 
@@ -821,6 +945,195 @@ body {
 
     .settings-toggle {
         display: none !important;
+    }
+}
+
+/* ============================================
+   Research Modal Styles
+   ============================================ */
+
+.modal-research {
+    max-width: 800px;
+    max-height: 90vh;
+}
+
+.research-body {
+    overflow-y: auto;
+    max-height: calc(90vh - 120px);
+}
+
+.research-intro {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.6;
+}
+
+.research-section {
+    margin-bottom: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.research-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background-color: var(--bg-tertiary);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background-color var(--transition-fast);
+}
+
+.research-header:hover {
+    background-color: var(--bg-hover);
+}
+
+.research-icon {
+    font-size: 1.25rem;
+    width: 28px;
+    text-align: center;
+}
+
+.research-content {
+    padding: var(--spacing-md);
+    background-color: var(--bg-secondary);
+    line-height: 1.7;
+}
+
+.research-content h4 {
+    margin: var(--spacing-md) 0 var(--spacing-sm);
+    color: var(--accent);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.citation-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.citation-list li {
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.citation-list li:last-child {
+    border-bottom: none;
+}
+
+.citation-list a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: var(--spacing-xs);
+}
+
+.citation-list a:hover {
+    text-decoration: underline;
+}
+
+.citation-list a em {
+    color: var(--text-secondary);
+}
+
+.citation-note {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    padding-left: var(--spacing-md);
+    border-left: 2px solid var(--border-color);
+    margin-left: var(--spacing-xs);
+}
+
+.research-insight {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: rgba(233, 69, 96, 0.1);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    font-size: 0.9rem;
+}
+
+.research-summary {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--border-radius);
+}
+
+.research-summary h3 {
+    margin: 0 0 var(--spacing-md);
+    font-size: 1rem;
+}
+
+.research-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.research-table th,
+.research-table td {
+    padding: var(--spacing-sm);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.research-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.research-table tr:last-child td {
+    border-bottom: none;
+}
+
+.mode-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    font-size: 0.85rem;
+}
+
+.research-footer {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+/* Mobile research modal adjustments */
+@media (max-width: 519px) {
+    .modal-research {
+        max-height: 95vh;
+    }
+
+    .research-body {
+        max-height: calc(95vh - 100px);
+    }
+
+    .research-table {
+        font-size: 0.8rem;
+    }
+
+    .research-table th,
+    .research-table td {
+        padding: var(--spacing-xs);
+    }
+
+    .citation-list a {
+        font-size: 0.85rem;
     }
 }
 

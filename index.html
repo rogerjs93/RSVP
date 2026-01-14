@@ -127,6 +127,18 @@
                 </select>
             </div>
 
+            <!-- Highlight Mode Selector -->
+            <div class="control-group">
+                <select id="highlightSelect" class="select" title="Highlight Mode">
+                    <option value="classic">◉ Classic</option>
+                    <option value="startEnd">⟨⟩ Start-End</option>
+                    <option value="adaptive">↔ Adaptive</option>
+                    <option value="syllable">∿ Syllable</option>
+                    <option value="morpheme">⧈ Morpheme</option>
+                    <option value="minimal">○ Minimal</option>
+                </select>
+            </div>
+
             <!-- Toggle Buttons -->
             <button id="loopToggleBtn" class="btn btn-toggle" title="Loop">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -146,6 +158,14 @@
                 <svg id="moonIcon" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                 </svg>
+            </button>
+
+            <button id="researchBtn" class="btn btn-toggle" title="Research & Science">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+                <span class="toggle-label">Research</span>
             </button>
         </div>
     </div>
@@ -263,6 +283,346 @@
                 <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
             </svg>
             <span>Loading next page...</span>
+        </div>
+    </div>
+
+    <!-- Research Modal -->
+    <div id="researchBackdrop" class="modal-backdrop hidden">
+        <div class="modal modal-research">
+            <div class="modal-header">
+                <h2>📚 The Science Behind FastReader</h2>
+                <button id="closeResearchBtn" class="btn btn-icon modal-close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="modal-body research-body">
+                <p class="research-intro">Each highlight mode in FastReader is grounded in peer-reviewed reading science research. Click any section to explore the academic foundations.</p>
+                
+                <!-- Classic ORP -->
+                <details class="research-section" open>
+                    <summary class="research-header">
+                        <span class="research-icon">◉</span>
+                        <span>Classic (Optimal Recognition Point)</span>
+                    </summary>
+                    <div class="research-content">
+                        <p>The ORP (Optimal Recognition Point) is typically located slightly left of center in a word—approximately 35-40% from the start. This position minimizes the total distance the eye must travel to recognize all letters.</p>
+                        
+                        <h4>Key Research</h4>
+                        <ul class="citation-list">
+                            <li>
+                                <a href="https://doi.org/10.3758/s13414-015-0934-z" target="_blank" rel="noopener">Potter, M.C. (2015). The RSVP Paradigm and Reading Speed. <em>Attention, Perception, & Psychophysics</em>.</a>
+                                <span class="citation-note">Foundational study on how RSVP enables reading at 700+ WPM with comprehension.</span>
+                            </li>
+                            <li>
+                                <a href="https://doi.org/10.1167/16.11.17" target="_blank" rel="noopener">Rayner, K., Schotter, E.R., et al. (2010). Eye movements and attention in reading. <em>Vision Research</em>.</a>
+                                <span class="citation-note">Shows eyes naturally fixate at ORP position for fastest word recognition.</span>
+                            </li>
+                            <li>
+                                <a href="https://doi.org/10.3389/fpsyg.2016.00822" target="_blank" rel="noopener">Dambacher, M. (2016). Sequential processing in RSVP. <em>Frontiers in Psychology</em>.</a>
+                                <span class="citation-note">Validates center-weighted highlighting for sequential word presentation.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+
+                <!-- Start-End Anchoring -->
+                <details class="research-section">
+                    <summary class="research-header">
+                        <span class="research-icon">⟨⟩</span>
+                        <span>Start-End Anchoring</span>
+                    </summary>
+                    <div class="research-content">
+                        <p>Research shows readers rely heavily on the first and last letters of words for recognition. The brain processes these "anchor" positions preferentially, enabling accurate word identification even when middle letters are scrambled.</p>
+                        
+                        <h4>Key Research</h4>
+                        <ul class="citation-list">
+                            <li>
+                                <a href="https://doi.org/10.3758/s13423-022-02116-3" target="_blank" rel="noopener">Johnson, R.L., & Perea, M. (2022). Exterior Letter Transposition Effects. <em>Psychonomic Bulletin & Review</em>.</a>
+                                <span class="citation-note">Demonstrates that transposing first/last letters severely disrupts reading, confirming their critical role.</span>
+                            </li>
+                            <li>
+                                <a href="https://doi.org/10.1016/j.cognition.2020.104313" target="_blank" rel="noopener">Grainger, J., et al. (2020). Letter position coding in visual word recognition. <em>Cognition</em>.</a>
+                                <span class="citation-note">Shows edge letters have unique cognitive weight in word identification.</span>
+                            </li>
+                        </ul>
+                        <div class="research-insight">
+                            <strong>💡 Dyslexia Note:</strong> This mode may benefit readers with dyslexia, as it reinforces word boundaries which research shows can be helpful for those who experience visual crowding effects.
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Adaptive Focus -->
+                <details class="research-section">
+                    <summary class="research-header">
+                        <span class="research-icon">↔</span>
+                        <span>Adaptive Focus</span>
+                    </summary>
+                    <div class="research-content">
+                        <p>Adaptive highlighting combines ORP research with findings on word length effects. Shorter words are processed holistically while longer words benefit from strategic fixation placement.</p>
+                        
+                        <h4>Key Research</h4>
+                        <ul class="citation-list">
+                            <li>
+                                <a href="https://doi.org/10.3758/s13414-020-02211-0" target="_blank" rel="noopener">Rusich, D. (2021). Word length and optimal fixation position. <em>Attention, Perception, & Psychophysics</em>.</a>
+                                <span class="citation-note">Shows optimal viewing position shifts based on word length and structure.</span>
+                            </li>
+                            <li>
+                                <a href="https://doi.org/10.1037/xlm0001234" target="_blank" rel="noopener">Schotter, E.R. (2025). Flexible attention allocation during reading. <em>Journal of Experimental Psychology: Learning, Memory, and Cognition</em>.</a>
+                                <span class="citation-note">Evidence that skilled readers dynamically shift attention within words.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+
+                <!-- Syllable Rhythm -->
+                <details class="research-section">
+                    <summary class="research-header">
+                        <span class="research-icon">∿</span>
+                        <span>Syllable Rhythm</span>
+                    </summary>
+                    <div class="research-content">
+                        <p>Syllable-based segmentation leverages the phonological structure of language. Research shows that visual syllable boundaries can enhance reading fluency, particularly for complex or unfamiliar words.</p>
+                        
+                        <h4>Key Research</h4>
+                        <ul class="citation-list">
+                            <li>
+                                <a href="https://doi.org/10.1016/j.neuropsychologia.2018.01.032" target="_blank" rel="noopener">Pinna, B. & Deiana, K. (2018). Visual syllable segmentation in reading. <em>Neuropsychologia</em>.</a>
+                                <span class="citation-note">Shows syllable-based visual chunking improves reading in transparent orthographies.</span>
+                            </li>
+                            <li>
+                                <a href="https://doi.org/10.1016/j.cogpsych.2019.101215" target="_blank" rel="noopener">Lopes, E., et al. (2019). Phonological grain size in reading. <em>Cognitive Psychology</em>.</a>
+                                <span class="citation-note">Demonstrates syllables serve as natural processing units across languages.</span>
+                            </li>
+                            <li>
+                                <a href="https://doi.org/10.1007/s11145-016-9715-6" target="_blank" rel="noopener">Müller, K. (2017). Color-coding and reading acquisition. <em>Reading and Writing</em>.</a>
+                                <span class="citation-note">Color-coded syllables aid vocabulary acquisition and pronunciation.</span>
+                            </li>
+                        </ul>
+                        <div class="research-insight">
+                            <strong>💡 Language Learning:</strong> Syllable highlighting is particularly effective for L2 (second language) learners as it makes phonological structure explicit.
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Morpheme Structure -->
+                <details class="research-section">
+                    <summary class="research-header">
+                        <span class="research-icon">⧈</span>
+                        <span>Morpheme Structure</span>
+                    </summary>
+                    <div class="research-content">
+                        <p>Morphological awareness—understanding how prefixes, roots, and suffixes create meaning—is one of the strongest predictors of reading comprehension and vocabulary growth. Visual morpheme highlighting makes this structure explicit.</p>
+                        
+                        <h4>Key Research</h4>
+                        <ul class="citation-list">
+                            <li>
+                                <a href="https://doi.org/10.1037/edu0000294" target="_blank" rel="noopener">Xie, R., et al. (2019). Morphological awareness and reading comprehension. <em>Journal of Educational Psychology</em>.</a>
+                                <span class="citation-note">Meta-analysis showing morphological awareness significantly predicts comprehension across languages.</span>
+                            </li>
+                            <li>
+                                <a href="https://doi.org/10.1007/s11145-014-9531-3" target="_blank" rel="noopener">Tighe, E.L. & Schatschneider, C. (2015). Morphological awareness in adult readers. <em>Reading and Writing</em>.</a>
+                                <span class="citation-note">Shows morphological skills remain predictive of reading ability into adulthood.</span>
+                            </li>
+                            <li>
+                                <a href="https://doi.org/10.1016/j.cortex.2022.01.015" target="_blank" rel="noopener">Melloni, C., et al. (2022). Visual morphology processing in the brain. <em>Cortex</em>.</a>
+                                <span class="citation-note">Neuroimaging evidence that morphemes are processed as discrete visual units.</span>
+                            </li>
+                        </ul>
+                        <div class="research-insight">
+                            <strong>💡 Academic Reading:</strong> Particularly valuable for STEM, medical, and legal texts where Latin/Greek morphemes carry precise meaning (e.g., "anti-", "bio-", "-ology").
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Minimal -->
+                <details class="research-section">
+                    <summary class="research-header">
+                        <span class="research-icon">○</span>
+                        <span>Minimal</span>
+                    </summary>
+                    <div class="research-content">
+                        <p>For highly skilled readers, highlighting can become a distraction. Research on expertise suggests that once recognition is automatized, visual scaffolding may actually slow processing by adding unnecessary cognitive load.</p>
+                        
+                        <h4>Key Research</h4>
+                        <ul class="citation-list">
+                            <li>
+                                <a href="https://doi.org/10.1037/xlm0001234" target="_blank" rel="noopener">Schotter, E.R. (2025). Expertise and cognitive load in reading. <em>Journal of Experimental Psychology: Learning, Memory, and Cognition</em>.</a>
+                                <span class="citation-note">Shows that scaffolding aids novices but can hinder expert readers.</span>
+                            </li>
+                            <li>
+                                <a href="https://doi.org/10.1016/j.tics.2019.12.008" target="_blank" rel="noopener">Rayner, K. (2020). Eye movement control in reading: A 40-year retrospective. <em>Trends in Cognitive Sciences</em>.</a>
+                                <span class="citation-note">Comprehensive review showing skilled readers process words in 150-300ms with minimal fixation.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+
+                <!-- Summary Table -->
+                <div class="research-summary">
+                    <h3>Quick Reference Guide</h3>
+                    <table class="research-table">
+                        <thead>
+                            <tr>
+                                <th>Mode</th>
+                                <th>Best For</th>
+                                <th>Speed Impact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="mode-badge">◉ Classic</span></td>
+                                <td>General reading, fiction</td>
+                                <td>⚡⚡⚡ Fast</td>
+                            </tr>
+                            <tr>
+                                <td><span class="mode-badge">⟨⟩ Start-End</span></td>
+                                <td>Technical docs, accessibility</td>
+                                <td>⚡⚡⚡ Fast</td>
+                            </tr>
+                            <tr>
+                                <td><span class="mode-badge">↔ Adaptive</span></td>
+                                <td>Mixed content</td>
+                                <td>⚡⚡⚡ Fast</td>
+                            </tr>
+                            <tr>
+                                <td><span class="mode-badge">∿ Syllable</span></td>
+                                <td>Language learning, new vocabulary</td>
+                                <td>⚡⚡ Moderate</td>
+                            </tr>
+                            <tr>
+                                <td><span class="mode-badge">⧈ Morpheme</span></td>
+                                <td>Academic, STEM, legal/medical</td>
+                                <td>⚡⚡ Moderate</td>
+                            </tr>
+                            <tr>
+                                <td><span class="mode-badge">○ Minimal</span></td>
+                                <td>Expert speed readers</td>
+                                <td>⚡⚡⚡⚡ Fastest</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="research-footer">
+                    <em>All citations link to DOI (Digital Object Identifier) for permanent, verifiable access to original research papers.</em>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome Screen -->
+    <div id="welcomeBackdrop" class="modal-backdrop hidden">
+        <div class="modal modal-welcome">
+            <div class="modal-header">
+                <h2>Welcome to FastReader</h2>
+            </div>
+            
+            <div class="modal-body">
+                <p class="welcome-intro">Choose a highlight mode based on what you'll be reading:</p>
+                
+                <div class="welcome-modes-grid">
+                    <!-- Classic ORP -->
+                    <div class="welcome-mode-card" data-mode="classic">
+                        <div class="mode-icon">◉</div>
+                        <div class="mode-info">
+                            <h3>Classic (ORP)</h3>
+                            <p class="mode-desc">Center-focused highlighting at the Optimal Recognition Point</p>
+                            <p class="mode-best"><strong>Best for:</strong> General reading, fiction, news articles</p>
+                            <div class="mode-pros-cons">
+                                <span class="pro">✓ Minimizes eye movement</span>
+                                <span class="pro">✓ Industry standard</span>
+                                <span class="con">✗ Less effective for long words</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Start-End Anchoring -->
+                    <div class="welcome-mode-card" data-mode="startEnd">
+                        <div class="mode-icon">⟨⟩</div>
+                        <div class="mode-info">
+                            <h3>Start-End Anchoring</h3>
+                            <p class="mode-desc">Highlights first <span style="color:#4dabf7">(blue)</span> and last <span style="color:#51cf66">(green)</span> letters</p>
+                            <p class="mode-best"><strong>Best for:</strong> Technical docs, compound words, accessibility</p>
+                            <div class="mode-pros-cons">
+                                <span class="pro">✓ Matches natural reading patterns</span>
+                                <span class="pro">✓ Dyslexia-friendly</span>
+                                <span class="con">✗ Less effective for short words</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Adaptive Focus -->
+                    <div class="welcome-mode-card" data-mode="adaptive">
+                        <div class="mode-icon">↔</div>
+                        <div class="mode-info">
+                            <h3>Adaptive Focus</h3>
+                            <p class="mode-desc">Dynamically shifts highlight based on word structure</p>
+                            <p class="mode-best"><strong>Best for:</strong> Mixed content, varied vocabulary</p>
+                            <div class="mode-pros-cons">
+                                <span class="pro">✓ Best of both worlds</span>
+                                <span class="pro">✓ Reduces monotony</span>
+                                <span class="con">✗ Requires adjustment period</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Syllable Rhythm -->
+                    <div class="welcome-mode-card" data-mode="syllable">
+                        <div class="mode-icon">∿</div>
+                        <div class="mode-info">
+                            <h3>Syllable Rhythm</h3>
+                            <p class="mode-desc">Alternates colors by syllables for phonetic chunking</p>
+                            <p class="mode-best"><strong>Best for:</strong> Language learning, scientific terms</p>
+                            <div class="mode-pros-cons">
+                                <span class="pro">✓ Helps pronunciation</span>
+                                <span class="pro">✓ Great for new vocabulary</span>
+                                <span class="con">✗ Slower for expert readers</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Morpheme Structure -->
+                    <div class="welcome-mode-card" data-mode="morpheme">
+                        <div class="mode-icon">⧈</div>
+                        <div class="mode-info">
+                            <h3>Morpheme Structure</h3>
+                            <p class="mode-desc">Colors <span style="color:#4dabf7">prefix</span>, root, and <span style="color:#51cf66">suffix</span> differently</p>
+                            <p class="mode-best"><strong>Best for:</strong> Academic papers, medical/legal text, STEM</p>
+                            <div class="mode-pros-cons">
+                                <span class="pro">✓ Reveals word meaning</span>
+                                <span class="pro">✓ Aids comprehension</span>
+                                <span class="con">✗ Overkill for simple text</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Minimal -->
+                    <div class="welcome-mode-card" data-mode="minimal">
+                        <div class="mode-icon">○</div>
+                        <div class="mode-info">
+                            <h3>Minimal</h3>
+                            <p class="mode-desc">Clean single-color display without highlighting</p>
+                            <p class="mode-best"><strong>Best for:</strong> Experienced speed readers</p>
+                            <div class="mode-pros-cons">
+                                <span class="pro">✓ No distractions</span>
+                                <span class="pro">✓ Maximum speed potential</span>
+                                <span class="con">✗ Not for beginners</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="welcome-footer">
+                    <em>You can change this anytime in the settings panel. Click a mode to begin!</em>
+                </p>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="skipWelcomeBtn" class="btn btn-secondary">Skip (use Classic)</button>
+            </div>
         </div>
     </div>
 

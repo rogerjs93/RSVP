@@ -18,7 +18,83 @@
         profile: 'fastreader.profile',
         loop: 'fastreader.loop',
         font: 'fastreader.font',
-        lastText: 'fastreader.lastText'
+        lastText: 'fastreader.lastText',
+        highlightMode: 'fastreader.highlightMode',
+        firstVisit: 'fastreader.firstVisit'
+    };
+
+    // Highlight Modes for different reading strategies
+    const HIGHLIGHT_MODES = {
+        classic: {
+            name: 'Classic (ORP)',
+            description: 'Original center-focused highlighting at the Optimal Recognition Point',
+            icon: '◉',
+            bestFor: 'General reading, fiction, news articles',
+            pros: ['Minimizes eye movement', 'Fast word recognition', 'Industry standard (Spritz-style)'],
+            cons: ['Less effective for long/compound words', 'Can cause tunnel vision fatigue']
+        },
+        startEnd: {
+            name: 'Start-End Anchoring',
+            description: 'Highlights first (blue) and last (green) letters for word shape recognition',
+            icon: '⟨⟩',
+            bestFor: 'Technical documentation, compound words, accessibility',
+            pros: ['Matches natural lexical access patterns', 'Better for morphologically complex words', 'Dyslexia-friendly'],
+            cons: ['Slightly slower initial adaptation', 'Less effective for very short words']
+        },
+        adaptive: {
+            name: 'Adaptive Focus',
+            description: 'Dynamically shifts highlight based on word length and structure',
+            icon: '↔',
+            bestFor: 'Mixed content with varied vocabulary',
+            pros: ['Reduces monotony', 'Matches natural eye landing patterns', 'Best of both worlds'],
+            cons: ['Can feel inconsistent initially', 'Requires brief adjustment period']
+        },
+        syllable: {
+            name: 'Syllable Rhythm',
+            description: 'Alternates colors by syllables for phonetic chunking',
+            icon: '∿',
+            bestFor: 'Language learning, scientific terms, unfamiliar vocabulary',
+            pros: ['Mirrors phonological decoding', 'Helps with pronunciation', 'Great for new terminology'],
+            cons: ['Slower for expert readers', 'May not match exact syllable breaks']
+        },
+        morpheme: {
+            name: 'Morpheme Structure',
+            description: 'Colors prefix (blue), root (white), and suffix (green) differently',
+            icon: '⧈',
+            bestFor: 'Academic papers, medical/legal text, STEM content',
+            pros: ['Reveals word meaning structure', 'Reduces cognitive load for complex terms', 'Aids comprehension'],
+            cons: ['Pattern-based detection not always accurate', 'Overkill for simple text']
+        },
+        minimal: {
+            name: 'Minimal',
+            description: 'Clean single-color display without highlighting',
+            icon: '○',
+            bestFor: 'Experienced speed readers, reducing visual noise',
+            pros: ['No distractions', 'Pure RSVP experience', 'Maximum speed potential'],
+            cons: ['No focal guidance', 'Higher cognitive load', 'Not for beginners']
+        }
+    };
+
+    // Common prefixes and suffixes for morpheme detection
+    const PREFIXES = ['anti', 'auto', 'bio', 'contra', 'counter', 'de', 'dis', 'down', 'extra',
+                      'hyper', 'in', 'im', 'il', 'ir', 'inter', 'intra', 'macro', 'micro', 'mid',
+                      'mis', 'mono', 'multi', 'non', 'out', 'over', 'post', 'pre', 'pro', 're',
+                      'semi', 'sub', 'super', 'tele', 'trans', 'tri', 'ultra', 'un', 'under', 'up'];
+
+    const SUFFIXES = ['able', 'ible', 'al', 'ial', 'an', 'ian', 'ance', 'ence', 'ant', 'ent',
+                      'ary', 'ery', 'ory', 'ate', 'ed', 'en', 'er', 'or', 'ar', 'est', 'ful',
+                      'ic', 'ical', 'ile', 'ing', 'ion', 'tion', 'ation', 'ition', 'ious', 'ous',
+                      'ish', 'ism', 'ist', 'ity', 'ty', 'ive', 'ative', 'itive', 'less', 'ly',
+                      'ment', 'ness', 'ship', 'ward', 'wards', 'wise', 'ize', 'ise', 'fy'];
+
+    // Highlight colors
+    const HIGHLIGHT_COLORS = {
+        accent: '#e94560',      // Red - primary focal point
+        start: '#4dabf7',       // Blue - word start / prefix
+        end: '#51cf66',         // Green - word end / suffix
+        syllableA: '#e94560',   // Red - odd syllables
+        syllableB: '#4dabf7',   // Blue - even syllables
+        root: '#ffffff'         // White - root/default
     };
 
     const FONT_STACKS = {
@@ -93,6 +169,8 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
     let profileKey = loadStr(STORAGE_KEYS.profile, 'normal');
     let loopEnabled = loadBool(STORAGE_KEYS.loop, false);
     let fontChoice = loadStr(STORAGE_KEYS.font, 'system');
+    let highlightMode = loadStr(STORAGE_KEYS.highlightMode, 'classic');
+    let isFirstVisit = !localStorage.getItem(STORAGE_KEYS.firstVisit);
 
     // PDF state
     let isPdfMode = false;
@@ -152,6 +230,211 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         loadingOverlay: document.getElementById('loadingOverlay'),
         offlineBanner: document.getElementById('offlineBanner')
     };
+
+    // ============================================
+    // Highlight Mode Helpers
+    // ============================================
+
+    /**
+     * Simple vowel-based syllable detection
+     * Returns array of { start, end } indices for each syllable
+     */
+    function detectSyllables(word) {
+        const cleanWord = word.replace(/[^\p{L}]/gu, '').toLowerCase();
+        if (cleanWord.length <= 2) return [{ start: 0, end: word.length }];
+
+        const vowels = 'aeiouyàáâãäåèéêëìíîïòóôõöùúûüœæ';
+        const syllables = [];
+        let syllableStart = 0;
+        let inVowelGroup = false;
+        let vowelCount = 0;
+
+        for (let i = 0; i < cleanWord.length; i++) {
+            const isVowel = vowels.includes(cleanWord[i]);
+
+            if (isVowel && !inVowelGroup) {
+                inVowelGroup = true;
+                vowelCount++;
+                // Start new syllable before this vowel (except first)
+                if (vowelCount > 1 && i > 0) {
+                    // Split at consonant before vowel
+                    const splitPoint = Math.max(syllableStart + 1, i - 1);
+                    syllables.push({ start: syllableStart, end: splitPoint });
+                    syllableStart = splitPoint;
+                }
+            } else if (!isVowel) {
+                inVowelGroup = false;
+            }
+        }
+
+        // Add final syllable
+        syllables.push({ start: syllableStart, end: word.length });
+
+        // If only one vowel found, return whole word
+        if (syllables.length === 0 || vowelCount <= 1) {
+            return [{ start: 0, end: word.length }];
+        }
+
+        return syllables;
+    }
+
+    /**
+     * Pattern-based morpheme detection
+     * Returns { prefix, root, suffix } with start/end indices
+     */
+    function detectMorphemes(word) {
+        const cleanWord = word.replace(/[^\p{L}]/gu, '').toLowerCase();
+        const originalLength = word.length;
+        const punctuationAtEnd = word.length - cleanWord.length;
+
+        let prefixEnd = 0;
+        let suffixStart = cleanWord.length;
+
+        // Detect prefix (check longest matches first)
+        const sortedPrefixes = [...PREFIXES].sort((a, b) => b.length - a.length);
+        for (const prefix of sortedPrefixes) {
+            if (cleanWord.startsWith(prefix) && cleanWord.length > prefix.length + 2) {
+                prefixEnd = prefix.length;
+                break;
+            }
+        }
+
+        // Detect suffix (check longest matches first)
+        const sortedSuffixes = [...SUFFIXES].sort((a, b) => b.length - a.length);
+        for (const suffix of sortedSuffixes) {
+            if (cleanWord.endsWith(suffix) && cleanWord.length > suffix.length + prefixEnd + 1) {
+                suffixStart = cleanWord.length - suffix.length;
+                break;
+            }
+        }
+
+        // Ensure root has at least 2 characters
+        if (suffixStart - prefixEnd < 2) {
+            // Reset to no morpheme detection
+            return {
+                prefix: { start: 0, end: 0 },
+                root: { start: 0, end: originalLength },
+                suffix: { start: originalLength, end: originalLength }
+            };
+        }
+
+        return {
+            prefix: { start: 0, end: prefixEnd },
+            root: { start: prefixEnd, end: suffixStart },
+            suffix: { start: suffixStart, end: originalLength }
+        };
+    }
+
+    /**
+     * Get adaptive focus index based on word characteristics
+     */
+    function getAdaptiveFocusIndex(word) {
+        const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '');
+        const len = cleanWord.length;
+
+        if (len <= 3) return Math.floor(len / 2);
+        if (len <= 5) return Math.floor(len * 0.35);
+        if (len <= 8) return Math.floor(len * 0.3);
+
+        // For long words, check if suffix-heavy
+        const lowerWord = cleanWord.toLowerCase();
+        for (const suffix of SUFFIXES) {
+            if (lowerWord.endsWith(suffix) && suffix.length >= 3) {
+                // Focus on root area (before suffix)
+                return Math.floor((len - suffix.length) * 0.4);
+            }
+        }
+
+        // Default to first third for long words
+        return Math.floor(len * 0.3);
+    }
+
+    /**
+     * Get character colors for current highlight mode
+     */
+    function getCharacterColors(word, chars) {
+        const len = chars.length;
+        const colors = new Array(len).fill(theme === 'dark' ? '#ffffff' : '#1a1a2e');
+        const baseColor = colors[0];
+
+        switch (highlightMode) {
+            case 'classic': {
+                const mid = middleIndex(word);
+                if (mid < len) colors[mid] = HIGHLIGHT_COLORS.accent;
+                break;
+            }
+
+            case 'startEnd': {
+                // Find first and last letter positions (skip punctuation)
+                let firstLetter = -1, lastLetter = -1;
+                for (let i = 0; i < len; i++) {
+                    if (/[\p{L}\p{N}]/u.test(chars[i])) {
+                        if (firstLetter === -1) firstLetter = i;
+                        lastLetter = i;
+                    }
+                }
+                if (firstLetter !== -1) colors[firstLetter] = HIGHLIGHT_COLORS.start;
+                if (lastLetter !== -1 && lastLetter !== firstLetter) colors[lastLetter] = HIGHLIGHT_COLORS.end;
+                break;
+            }
+
+            case 'adaptive': {
+                const focusIdx = getAdaptiveFocusIndex(word);
+                if (focusIdx < len) colors[focusIdx] = HIGHLIGHT_COLORS.accent;
+                // Also subtle highlight on word boundaries for long words
+                if (len > 6) {
+                    let firstLetter = -1, lastLetter = -1;
+                    for (let i = 0; i < len; i++) {
+                        if (/[\p{L}\p{N}]/u.test(chars[i])) {
+                            if (firstLetter === -1) firstLetter = i;
+                            lastLetter = i;
+                        }
+                    }
+                    // Use dimmer versions
+                    if (firstLetter !== -1 && firstLetter !== focusIdx)
+                        colors[firstLetter] = theme === 'dark' ? '#7fb3d5' : '#2980b9';
+                    if (lastLetter !== -1 && lastLetter !== focusIdx && lastLetter !== firstLetter)
+                        colors[lastLetter] = theme === 'dark' ? '#82e0aa' : '#27ae60';
+                }
+                break;
+            }
+
+            case 'syllable': {
+                const syllables = detectSyllables(word);
+                syllables.forEach((syl, idx) => {
+                    const color = idx % 2 === 0 ? HIGHLIGHT_COLORS.syllableA : HIGHLIGHT_COLORS.syllableB;
+                    for (let i = syl.start; i < Math.min(syl.end, len); i++) {
+                        colors[i] = color;
+                    }
+                });
+                break;
+            }
+
+            case 'morpheme': {
+                const morphemes = detectMorphemes(word);
+                // Prefix in blue
+                for (let i = morphemes.prefix.start; i < Math.min(morphemes.prefix.end, len); i++) {
+                    colors[i] = HIGHLIGHT_COLORS.start;
+                }
+                // Root stays base color (or slightly emphasized)
+                for (let i = morphemes.root.start; i < Math.min(morphemes.root.end, len); i++) {
+                    colors[i] = baseColor;
+                }
+                // Suffix in green
+                for (let i = morphemes.suffix.start; i < Math.min(morphemes.suffix.end, len); i++) {
+                    colors[i] = HIGHLIGHT_COLORS.end;
+                }
+                break;
+            }
+
+            case 'minimal':
+            default:
+                // All same color, already set
+                break;
+        }
+
+        return colors;
+    }
 
     // ============================================
     // Storage Helpers
@@ -442,14 +725,13 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         ctx.lineTo(width / 2, centerY + fontSizePx * 0.7);
         ctx.stroke();
 
+        // Get character colors based on highlight mode
+        const charColors = getCharacterColors(currentWord, chars);
+
         // Draw each character
         let x = startX;
         chars.forEach((char, i) => {
-            if (i === mid) {
-                ctx.fillStyle = '#e94560'; // Accent color for focal point
-            } else {
-                ctx.fillStyle = theme === 'dark' ? '#ffffff' : '#1a1a2e';
-            }
+            ctx.fillStyle = charColors[i];
             ctx.fillText(char, x, centerY);
             x += widths[i];
         });
@@ -890,6 +1172,66 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         }
     }
 
+    function setHighlightMode(mode) {
+        if (HIGHLIGHT_MODES[mode]) {
+            highlightMode = mode;
+            saveStr(STORAGE_KEYS.highlightMode, mode);
+            draw();
+            updateHighlightModeUI();
+        }
+    }
+
+    function updateHighlightModeUI() {
+        const select = document.getElementById('highlightSelect');
+        if (select) {
+            select.value = highlightMode;
+        }
+    }
+
+    // ============================================
+    // Welcome Screen
+    // ============================================
+
+    function showWelcomeScreen() {
+        const backdrop = document.getElementById('welcomeBackdrop');
+        if (backdrop) {
+            backdrop.classList.remove('hidden');
+        }
+    }
+
+    function hideWelcomeScreen() {
+        const backdrop = document.getElementById('welcomeBackdrop');
+        if (backdrop) {
+            backdrop.classList.add('hidden');
+        }
+        // Mark as visited
+        saveStr(STORAGE_KEYS.firstVisit, 'false');
+        isFirstVisit = false;
+    }
+
+    function selectWelcomeMode(mode) {
+        setHighlightMode(mode);
+        hideWelcomeScreen();
+    }
+
+    // ============================================
+    // Research Modal
+    // ============================================
+
+    function showResearchModal() {
+        const backdrop = document.getElementById('researchBackdrop');
+        if (backdrop) {
+            backdrop.classList.remove('hidden');
+        }
+    }
+
+    function hideResearchModal() {
+        const backdrop = document.getElementById('researchBackdrop');
+        if (backdrop) {
+            backdrop.classList.add('hidden');
+        }
+    }
+
     function toggleSettings() {
         elements.settingsPanel.classList.toggle('expanded');
     }
@@ -964,6 +1306,12 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         elements.profileSelect.addEventListener('change', (e) => setProfile(e.target.value));
         elements.fontSelect.addEventListener('change', (e) => setFont(e.target.value));
 
+        // Highlight Mode
+        const highlightSelect = document.getElementById('highlightSelect');
+        if (highlightSelect) {
+            highlightSelect.addEventListener('change', (e) => setHighlightMode(e.target.value));
+        }
+
         // Modal
         elements.textBtn.addEventListener('click', openModal);
         elements.cancelModalBtn.addEventListener('click', closeModal);
@@ -993,6 +1341,35 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         document.getElementById('loadAllPagesBtn').addEventListener('click', loadAllPdfPages);
         document.getElementById('loadQuickStartBtn').addEventListener('click', loadQuickStart);
 
+        // Welcome Screen
+        const welcomeModeCards = document.querySelectorAll('.welcome-mode-card');
+        welcomeModeCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const mode = card.dataset.mode;
+                if (mode) selectWelcomeMode(mode);
+            });
+        });
+        const skipWelcomeBtn = document.getElementById('skipWelcomeBtn');
+        if (skipWelcomeBtn) {
+            skipWelcomeBtn.addEventListener('click', hideWelcomeScreen);
+        }
+
+        // Research Modal
+        const researchBtn = document.getElementById('researchBtn');
+        if (researchBtn) {
+            researchBtn.addEventListener('click', showResearchModal);
+        }
+        const closeResearchBtn = document.getElementById('closeResearchBtn');
+        if (closeResearchBtn) {
+            closeResearchBtn.addEventListener('click', hideResearchModal);
+        }
+        const researchBackdrop = document.getElementById('researchBackdrop');
+        if (researchBackdrop) {
+            researchBackdrop.addEventListener('click', (e) => {
+                if (e.target === researchBackdrop) hideResearchModal();
+            });
+        }
+
         // Touch/pointer
         canvas.addEventListener('pointerdown', handlePointerDown);
         canvas.addEventListener('pointerup', handlePointerUp);
@@ -1017,6 +1394,7 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         updateThemeUI();
         updateLoopUI();
         updateOnlineStatus();
+        updateHighlightModeUI();
 
         // Set select values from storage
         elements.profileSelect.value = profileKey;
@@ -1040,6 +1418,11 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
             // Don't auto-play on load
             setPlaying(false);
             draw();
+
+            // Show welcome screen on first visit
+            if (isFirstVisit) {
+                showWelcomeScreen();
+            }
         };
 
         // Wait for fonts to load

@@ -503,45 +503,52 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         
         // Sound configurations per mode (based on neurolinguistic research)
         // Duration: 10-40ms, Attack: <5ms, Decay: <30ms
+        // All modes can have sound if user enables - no hardcoded 'enabled' flags
         configs: {
             classic: {
-                // Pauses only - no ticks (silence restores syntactic rhythm)
-                enabled: false
+                // Classic ORP: Sparse boundary ticks, mostly silence
+                clauseTick: { freq: 600, duration: 0.018, volume: 0.05 },
+                phraseTick: { freq: 550, duration: 0.015, volume: 0.04 },
+                sentenceTick: { freq: 500, duration: 0.025, volume: 0.06 }
             },
             startEnd: {
-                // Phrase-aligned soft ticks for chunking
-                enabled: true,
-                phraseTick: { freq: 800, duration: 0.020, volume: 0.08 },
+                // Start-End: Phrase-aligned soft ticks for chunking
+                wordTick: { freq: 900, duration: 0.010, volume: 0.03 },
                 clauseTick: { freq: 700, duration: 0.025, volume: 0.10 },
-                sentenceEnd: { silence: true }
+                phraseTick: { freq: 800, duration: 0.020, volume: 0.08 },
+                sentenceTick: { freq: 600, duration: 0.030, volume: 0.08 }
             },
             adaptive: {
-                // Dynamic pauses + sparse boundary ticks
-                enabled: true,
-                phraseTick: { freq: 900, duration: 0.015, volume: 0.06 },
+                // Adaptive: Dynamic pauses + boundary ticks + long word cues
+                longWordTick: { freq: 650, duration: 0.015, volume: 0.05 },
                 clauseTick: { freq: 750, duration: 0.020, volume: 0.08 },
-                sentenceEnd: { silence: true }
+                phraseTick: { freq: 900, duration: 0.015, volume: 0.06 },
+                sentenceTick: { freq: 550, duration: 0.030, volume: 0.07 }
             },
             syllable: {
-                // Stressed-syllable micro-ticks (theta-band ~4-8 Hz alignment)
-                enabled: true,
-                stressTick: { freq: 1000, duration: 0.012, volume: 0.05 },
-                phraseBoundary: { silence: true }
+                // Syllable: Stressed-syllable micro-ticks (theta-band ~4-8 Hz)
+                stressTick: { freq: 1000, duration: 0.012, volume: 0.06 },
+                clauseTick: { freq: 800, duration: 0.018, volume: 0.07 },
+                phraseTick: { freq: 850, duration: 0.015, volume: 0.05 },
+                sentenceTick: { freq: 600, duration: 0.025, volume: 0.06 }
             },
             morpheme: {
-                // Boundary confirmation ticks (prefix→root, root→suffix)
-                enabled: true,
-                prefixTick: { freq: 850, duration: 0.015, volume: 0.06 },
-                suffixTick: { freq: 750, duration: 0.020, volume: 0.07 }
+                // Morpheme: Boundary confirmation ticks
+                prefixTick: { freq: 850, duration: 0.015, volume: 0.07 },
+                suffixTick: { freq: 750, duration: 0.020, volume: 0.08 },
+                rootTick: { freq: 700, duration: 0.012, volume: 0.04 },
+                clauseTick: { freq: 650, duration: 0.020, volume: 0.06 },
+                sentenceTick: { freq: 550, duration: 0.025, volume: 0.06 }
             },
             minimal: {
-                // Complete silence - expert readers self-generate prosody
-                enabled: false
+                // Minimal: Very sparse - only major boundaries
+                sentenceTick: { freq: 500, duration: 0.020, volume: 0.04 },
+                phraseTick: { freq: 550, duration: 0.015, volume: 0.03 }
             }
         },
 
         init() {
-            if (this.isInitialized) return true;
+            if (this.isInitialized && this.audioCtx) return true;
             try {
                 this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 this.isInitialized = true;
@@ -559,16 +566,34 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         },
 
         /**
+         * Ensure audio context is ready (call on play start)
+         */
+        ensureReady() {
+            if (!this.isInitialized) {
+                this.init();
+            }
+            this.resume();
+        },
+
+        /**
          * Play a short transient tick sound
          * @param {number} freq - Frequency in Hz (fixed pitch, no melody)
          * @param {number} duration - Duration in seconds (10-40ms range)
          * @param {number} volume - Volume 0-1 (aim for -20 to -30 LUFS)
          */
         playTick(freq = 800, duration = 0.020, volume = 0.08) {
-            if (!this.audioCtx || !soundEnabled) return;
+            if (!soundEnabled || !soundModes[highlightMode]) return;
             
-            // Check if current mode has sound enabled
-            if (!soundModes[highlightMode]) return;
+            // Initialize audio context if needed
+            if (!this.audioCtx) {
+                this.init();
+            }
+            if (!this.audioCtx) return;
+            
+            // Resume if suspended (browser autoplay policy)
+            if (this.audioCtx.state === 'suspended') {
+                this.audioCtx.resume();
+            }
             
             try {
                 const ctx = this.audioCtx;
@@ -596,40 +621,29 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
 
         /**
          * Play mode-specific cue based on current word/context
-         * @param {string} cueType - 'phrase', 'clause', 'sentence', 'stress', 'prefix', 'suffix'
+         * @param {string} cueType - 'phrase', 'clause', 'sentence', 'stress', 'prefix', 'suffix', 'word', 'longWord', 'root'
          */
         playCue(cueType) {
             if (!soundEnabled || !soundModes[highlightMode]) return;
             
             const config = this.configs[highlightMode];
-            if (!config || !config.enabled) return;
+            if (!config) return;
 
+            let tickConfig = null;
             switch (cueType) {
-                case 'phrase':
-                    if (config.phraseTick) {
-                        this.playTick(config.phraseTick.freq, config.phraseTick.duration, config.phraseTick.volume);
-                    }
-                    break;
-                case 'clause':
-                    if (config.clauseTick) {
-                        this.playTick(config.clauseTick.freq, config.clauseTick.duration, config.clauseTick.volume);
-                    }
-                    break;
-                case 'stress':
-                    if (config.stressTick) {
-                        this.playTick(config.stressTick.freq, config.stressTick.duration, config.stressTick.volume);
-                    }
-                    break;
-                case 'prefix':
-                    if (config.prefixTick) {
-                        this.playTick(config.prefixTick.freq, config.prefixTick.duration, config.prefixTick.volume);
-                    }
-                    break;
-                case 'suffix':
-                    if (config.suffixTick) {
-                        this.playTick(config.suffixTick.freq, config.suffixTick.duration, config.suffixTick.volume);
-                    }
-                    break;
+                case 'word': tickConfig = config.wordTick; break;
+                case 'longWord': tickConfig = config.longWordTick; break;
+                case 'clause': tickConfig = config.clauseTick; break;
+                case 'phrase': tickConfig = config.phraseTick; break;
+                case 'sentence': tickConfig = config.sentenceTick; break;
+                case 'stress': tickConfig = config.stressTick; break;
+                case 'prefix': tickConfig = config.prefixTick; break;
+                case 'suffix': tickConfig = config.suffixTick; break;
+                case 'root': tickConfig = config.rootTick; break;
+            }
+            
+            if (tickConfig) {
+                this.playTick(tickConfig.freq, tickConfig.duration, tickConfig.volume);
             }
         }
     };
@@ -757,12 +771,15 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
     }
 
     /**
-     * Trigger appropriate prosodic sound cue based on context
+     * Trigger appropriate prosodic sound cue based on context and mode
+     * Each mode has different sound strategies per neurolinguistic research
      */
     function triggerProsodicCue(token, word) {
-        // Sentence ending - most modes use silence, but trigger for those that have cues
+        const cleanWord = word.replace(/[^\p{L}]/gu, '');
+        
+        // Sentence ending (.!?) - play sentence tick
         if (/[.!?]$/.test(word)) {
-            // Sentence boundaries typically use silence in all modes
+            ProsodicSound.playCue('sentence');
             return;
         }
         
@@ -778,20 +795,51 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
             return;
         }
 
-        // Mode-specific triggers
-        if (highlightMode === 'syllable') {
-            // For syllable mode, play stress tick on first syllable of multi-syllable words
-            const cleanWord = word.replace(/[^\p{L}]/gu, '');
-            if (cleanWord.length > 4) {
-                ProsodicSound.playCue('stress');
-            }
-        } else if (highlightMode === 'morpheme') {
-            // For morpheme mode, tick on words with detected affixes
-            const morph = detectMorphemes(word);
-            if (morph.prefix.end > 0 || morph.suffix.start < word.length) {
-                if (morph.prefix.end > 0) ProsodicSound.playCue('prefix');
-                if (morph.suffix.start < word.length) ProsodicSound.playCue('suffix');
-            }
+        // Mode-specific triggers for regular words
+        switch (highlightMode) {
+            case 'classic':
+                // Classic: Very sparse - only boundaries (handled above)
+                break;
+                
+            case 'startEnd':
+                // Start-End: Subtle tick on each word for rhythm
+                if (cleanWord.length > 2) {
+                    ProsodicSound.playCue('word');
+                }
+                break;
+                
+            case 'adaptive':
+                // Adaptive: Tick on long/complex words only
+                if (cleanWord.length > 7) {
+                    ProsodicSound.playCue('longWord');
+                }
+                break;
+                
+            case 'syllable':
+                // Syllable: Stress tick on multi-syllable words
+                if (cleanWord.length > 4) {
+                    ProsodicSound.playCue('stress');
+                }
+                break;
+                
+            case 'morpheme':
+                // Morpheme: Tick on words with detected affixes
+                const morph = detectMorphemes(word);
+                if (morph.prefix.end > 0) {
+                    ProsodicSound.playCue('prefix');
+                }
+                if (morph.suffix.start < cleanWord.length) {
+                    ProsodicSound.playCue('suffix');
+                }
+                // Root tick for complex words
+                if (morph.prefix.end > 0 || morph.suffix.start < cleanWord.length) {
+                    ProsodicSound.playCue('root');
+                }
+                break;
+                
+            case 'minimal':
+                // Minimal: No per-word sounds - only boundaries (handled above)
+                break;
         }
     }
 
@@ -858,6 +906,10 @@ Click "Set Text" to paste your own content or upload a PDF or text file. Happy r
         updatePlayButton();
         stopLoop();
         if (v && wpm > 0) {
+            // Ensure audio context is ready when starting playback
+            if (soundEnabled) {
+                ProsodicSound.ensureReady();
+            }
             scheduleNext();
         }
         updateNavButtons();

@@ -21,7 +21,7 @@ A free, open-source Progressive Web App for speed reading using the RSVP (Rapid 
 
 ### Online
 
-Visit the hosted version at: `https://[your-username].github.io/fastreader/`
+Visit the hosted version at: `https://rogerjs93.github.io/fastreader/`
 
 ### Local Development
 

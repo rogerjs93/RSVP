@@ -27,7 +27,7 @@ Visit the hosted version at: `https://[your-username].github.io/fastreader/`
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/[your-username]/fastreader.git
+   git clone https://github.com/rogerjs93/fastreader.git
    cd fastreader
    ```
 
